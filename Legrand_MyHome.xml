@@ -83,6 +83,8 @@
                             <update state="Ponto de Luz (1 - 15)" type="string">7</update>
                             <update state="Interface" type="string">0</update>
                             <update state="Sensor" type="boolean">true</update>
+                            <delay ms_delay=“500"></delay>
+                            <update state="Sensor" type="boolean">false</update>
                         </map>
                     </data_map>
                 </data>
