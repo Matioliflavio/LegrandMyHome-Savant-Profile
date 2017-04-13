@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Legrand" model="MyHome" device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="$Revision: 2.08" rpm_xml_version_date="$Date: 2017/03/29 10:09:40 $">
+    xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Legrand" model="MyHome" device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="$Revision: 2.07" rpm_xml_version_date="$Date: 2017/03/29 10:09:40 $">
     
     <notes>
         Address 1 = A  - if A == 10 pl wins 0 before
         Address 2 = PL - if pl>9 A wins 0 before
-        Address 3 = Interface - Put #4#0x where "x" means interface number. If Main Bus Instalation, leave it blank
+        Address 3 = Interface - Put #4#0x where "x" means interface number and it can goes to 5. If Main Bus Instalation, leave it blank
         
         L4686SDK need to be on 1.20 firmware version.
-            See http://myrti.ru/index.php/l4686sdk-to-rs232/en/ to assemble your cable/adapter
+        See http://myrti.ru/index.php/l4686sdk-to-rs232/en/ to assemble your cable/adapter
         
     </notes>
-
+    
     <control_interfaces preferred="RS232">
-        <!-- If you plan to use IP conection, you'll need to write a gatway program -->
-        <ip port="20000" response_time_length_ms="500">
+        <!-- If you plan to use IP conection, you'll need to write a gatway program -->>
+        <ip port="20000" response_time_length_ms="1500">
         </ip>
-        <rs232 data_length="8" parity_bit="no" stop_bit="1" preferred_baud_rate="115200" response_time_length_ms="1000" flow_control="none" connector_type="db9 female" cable_type="rs232 straight" name_on_component="RS-232">
+        <rs232 data_length="8" parity_bit="no" stop_bit="1" preferred_baud_rate="115200" response_time_length_ms="1000" flow_control="none" connector_type="db9 female" cable_type="rs232 null modem" name_on_component="RS-232">
             <baud_rate speed="115200"/>
         </rs232>
     </control_interfaces>
@@ -44,78 +44,71 @@
         <implementation>
             <internal name_on_component="Lighting Controller"></internal>
         </implementation>
-        
         <status_messages>
-<!--            <status_message name="SwitchStatus">
-                <constant type="character">*1*</constant>
-                <data type="character" constant_length="1">
-                    <data_map match_required="yes">
-                        <map key="0">
-                            <update state="IsSwitchOn" type="boolean">false</update>
-                        </map>
-                        <map key="1">
-                            <update state="IsSwitchOn" type="boolean">true</update>
-                        </map>
-                    </data_map>
-                </data>
-                <constant type="character">*</constant>
-                <data type="character" constant_length="1">
-                    <update state="Ambiente (1 - 10)" type="string"></update>
-                </data>
-                <data type="character" constant_length="1">
-                    <update state="Ponto de Luz (1 - 15)" type="string"></update>
-                </data>
-                <append_data_to_state_names state="Ambiente (1 - 10)" note="1 - 10"/>
-                <append_data_to_state_names state="Ponto de Luz (1 - 15)" note="1 - 15"/>
-            </status_message> -->
 
 
-            <status_message name="Sensor">
-                    <constant type="character">*1*34*</constant>
-                    <data type="character" terminator_type="character" terminator="##">
+            <!-- CEN PLUS -->
+            <status_message name="CurrentButtonState">
+                <constant type="character">*25*</constant>  <!-- *25*21#[Botão]*2[Objeto] -->
+                    <data type="character" terminator="#" terminator_type="character">
                         <data_map match_required="yes">
-                            <map key="77">
-                                <update state="Ambiente (1 - 10)" type="string">7</update>
-                                <update state="Ponto de Luz (1 - 15)" type="string">7</update>
-                                <update state="Interface" type="string">0</update>
-                                <update state="Sensor" type="boolean">true</update>
+                            <map key="PRESS">
+                                <update state="CurrentButtonState" type="string">21</update>
+                            </map>
+                            <map key="RELEASE">
+                                <update state="CurrentButtonState" type="string">24</update>
+                            </map>
+                            <map key="HOLD">
+                                <update state="CurrentButtonState" type="string">23</update>
                             </map>
                         </data_map>
                     </data>
+                    <data type="character" terminator="*2" terminator_type="character">
+                        <update state="CurrentButtonAddress" type="string"/>
+                    </data>
+                    <data type="character" terminator="##" terminator_type="character">
+                        <update state="CurrentObjectAddress" type="string"/>
+                    </data>
+                <append_data_to_state_names state="CurrentButtonAddress" note="'0' - '31'"/>
+                <append_data_to_state_names state="CurrentObjectAddress" note="'0' - '2047'"/>
+            </status_message>
 
+            <!--Presence Sensor-->
+            <status_message name="Sensor">
+                <constant type="character">*1*34*</constant>
+                <data type="character" terminator_type="character" terminator="##">
+                    <data_map match_required="yes">
+                        <map key="77">
+                            <update state="Ambiente (1 - 10)" type="string">7</update>
+                            <update state="Ponto de Luz (1 - 15)" type="string">7</update>
+                            <update state="Interface" type="string">0</update>
+                            <update state="Sensor" type="boolean">true</update>
+                        </map>
+                    </data_map>
+                </data>
                 <append_data_to_state_names state="Ambiente (1 - 10)" note="1 - 10"/>
                 <append_data_to_state_names state="Ponto de Luz (1 - 15)" note="1 - 15"/>
                 <append_data_to_state_names state="Interface" note=""/>
             </status_message>
-    
-    
-        <!-- CEN PLUS -->
-        <status_message name="CurrentButtonState">
-            <constant type="character">*25*</constant>  <!-- *25*21#[Botão]*2[Objeto] -->
-            <data type="character" terminator="#" terminator_type="character">
-                    <data_map match_required="yes">
-                        <map key="PRESS">
-                            <update state="CurrentButtonState" type="string">21</update>
-                        </map>
-                        <map key="RELEASE">
-                            <update state="CurrentButtonState" type="string">24</update>
-                        </map>
-                        <map key="HOLD">
-                            <update state="CurrentButtonState" type="string">23</update>
-                        </map>
-                    </data_map>
-            </data>
-            <data type="character" terminator="*2" terminator_type="character">
-                <update state="CurrentButtonAddress" type="string"/>
-            </data>
-            <data type="character" terminator="##" terminator_type="character">
-                <update state="CurrentObjectAddress">
-            </data>
-            <append_data_to_state_names state="CurrentButtonAddress" note="'0' - '31'"/>
-            <append_data_to_state_names state="CurrentObjectAddress" note="'0' - '2047'"/>
-        
-        <!-- LOADs -->
-        </status_message>
+
+            <!--ShadePosition-->
+            <status_message name="CurrentShadePosition">
+                <constant type="character">S:BLIND </constant>
+                <data type="character" terminator=" " terminator_type="character">
+                    <update state="ShadeAddress" type="string"/>
+                </data>
+                <data type="character" terminator_type="character" terminator=".">
+                    <update state="ShadeLevel" type="string"/>
+                </data>
+                <data type="character" terminator_type="end_of_data">
+                    <update state="UnusedStatusData" type="string"/>
+                </data>
+                <append_data_to_state_names state="ShadeAddress" note="'1' - '999999'"/>
+            </status_message>
+
+
+
+            <!--LOADs-->
             <status_message name="CurrentDimmerLevel">
                 <constant type="character">*1*</constant>
                 <data type="character" terminator_type="character" terminator="*">
@@ -5235,8 +5228,8 @@
                         
                         
                         
-    <!-- ----------- INTERFACE 5 ------------------------------>
-    <!-- AREA 0 -->
+                        <!-- INTERFACE 5 -->
+                        <!-- AREA 0 -->
                         <map key="01#4#05">
                             <update state="Ambiente (1 - 10)" type="string">0</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -5328,7 +5321,7 @@
                         </map>
                         
                         
-    <!-- AREA 1 -->
+                        <!-- AREA 1 -->
                         <map key="11#4#05">
                             <update state="Ambiente (1 - 10)" type="string">1</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -5420,7 +5413,7 @@
                             
                         </map>
                         
-    <!-- AREA 2 -->
+                        <!-- AREA 2 -->
                         <map key="21#4#05">
                             <update state="Ambiente (1 - 10)" type="string">2</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -5512,7 +5505,7 @@
                             
                         </map>
                         
-    <!-- AREA 3 -->
+                        <!-- AREA 3 -->
                         <map key="31#4#05">
                             <update state="Ambiente (1 - 10)" type="string">3</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -5603,7 +5596,7 @@
                             <update state="Interface" type="string">5</update>
                             
                         </map>
-    <!-- AREA 4 -->
+                        <!-- AREA 4 -->
                         <map key="41#4#05">
                             <update state="Ambiente (1 - 10)" type="string">4</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -5695,7 +5688,7 @@
                             
                         </map>
                         
-    <!-- AREA 5 -->
+                        <!-- AREA 5 -->
                         <map key="51#4#05">
                             <update state="Ambiente (1 - 10)" type="string">5</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -5786,7 +5779,7 @@
                             
                         </map>
                         
-    <!-- AREA 6 -->
+                        <!-- AREA 6 -->
                         <map key="61#4#05">
                             <update state="Ambiente (1 - 10)" type="string">6</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -5878,7 +5871,7 @@
                             
                         </map>
                         
-    <!-- AREA 7 -->
+                        <!-- AREA 7 -->
                         <map key="71#4#05">
                             <update state="Ambiente (1 - 10)" type="string">7</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -5970,7 +5963,7 @@
                             
                         </map>
                         
-    <!-- AREA 8 -->
+                        <!-- AREA 8 -->
                         <map key="81#4#05">
                             <update state="Ambiente (1 - 10)" type="string">8</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -6063,7 +6056,7 @@
                         </map>
                         
                         
-    <!-- AREA 9 -->
+                        <!-- AREA 9 -->
                         <map key="91#4#05">
                             <update state="Ambiente (1 - 10)" type="string">9</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -6156,7 +6149,7 @@
                         </map>
                         
                         
-    <!-- AREA 10 -->
+                        <!-- AREA 10 -->
                         <map key="1001#4#05">
                             <update state="Ambiente (1 - 10)" type="string">10</update>
                             <update state="Ponto de Luz (1 - 15)" type="string">1</update>
@@ -6246,8 +6239,14 @@
                             <update state="Interface" type="string">5</update>
                             
                         </map>
+
+
+
+                        
                     </data_map>
                 </data>
+                
+            
                 <append_data_to_state_names state="Ambiente (1 - 10)" note="1 - 10"/>
                 <append_data_to_state_names state="Ponto de Luz (1 - 15)" note="1 - 15"/>
                 <append_data_to_state_names state="Interface" note=""/>
@@ -6271,10 +6270,12 @@
         <resource_component_actions resource_type="ENV_LIGHTINGCONTROLLER_SOURCE">
             
             
+            
+            
             <action name="DimmerSet">
                 <action_argument name="Address1" note="Ambiente (1 - 10)"/>
                 <action_argument name="Address2" note="Ponto de Luz (1 - 15)"/>
-                <action_argument name="Address3" note="Interface Use #4#0x"/>
+                <action_argument name="Address3" note="Interface"/>
                 <action_argument name="Address4" note="not used"/>
                 <action_argument name="Address5" note="not used"/>
                 <action_argument name="Address6" note="not used"/>
@@ -6303,7 +6304,6 @@
                             <parameter parameter_data_type="character" parameter_total_width="1">*</parameter>
                             <parameter parameter_data_type="character" action_argument="Address1" parameter_total_width="2"></parameter>
                             <parameter parameter_data_type="character" action_argument="Address2" parameter_total_width="2"></parameter>
-                            <parameter parameter_data_type="character" action_argument="Address3" parameter_total_width="7"></parameter>
                             <parameter parameter_data_type="character" parameter_total_width="2">##</parameter>
                         </parameter_list>
                         <delay ms_delay="200"/>
@@ -6314,7 +6314,7 @@
             <action name="SwitchOn">
                 <action_argument name="Address1" note="Ambiente (1 - 10)"/>
                 <action_argument name="Address2" note="Ponto de Luz (1 - 15)"/>
-                <action_argument name="Address3" note="Interface Use #4#0x"/>
+                <action_argument name="Address3" note="Interface"/>
                 <action_argument name="Address4" note="not used"/>
                 <action_argument name="Address5" note="not used"/>
                 <action_argument name="Address6" note="not used"/>
@@ -6336,7 +6336,6 @@
                         <parameter_list>
                             <parameter parameter_data_type="character" action_argument="Address1" parameter_total_width="2"></parameter>
                             <parameter parameter_data_type="character" action_argument="Address2" parameter_total_width="2"></parameter>
-                            <parameter parameter_data_type="character" action_argument="Address3" parameter_total_width="7"></parameter>
                             <parameter parameter_data_type="character" parameter_total_width="2">##</parameter>
                         </parameter_list>
                         <delay ms_delay="200"/>
@@ -6348,7 +6347,7 @@
             <action name="SwitchOff">
                 <action_argument name="Address1" note="Ambiente (1 - 10)"/>
                 <action_argument name="Address2" note="Ponto de Luz (1 - 15)"/>
-                <action_argument name="Address3" note="Interface Use #4#0x"/>
+                <action_argument name="Address3" note="Interface"/>
                 <action_argument name="Address4" note="not used"/>
                 <action_argument name="Address5" note="not used"/>
                 <action_argument name="Address6" note="not used"/>
@@ -6370,7 +6369,6 @@
                         <parameter_list>
                             <parameter parameter_data_type="character" action_argument="Address1" parameter_total_width="2"></parameter>
                             <parameter parameter_data_type="character" action_argument="Address2" parameter_total_width="2"></parameter>
-                            <parameter parameter_data_type="character" action_argument="Address3" parameter_total_width="7"></parameter>
                             <parameter parameter_data_type="character" parameter_total_width="2">##</parameter>
                         </parameter_list>
                         <delay ms_delay="200"/>
@@ -6460,7 +6458,7 @@
                     <valueSource name="DimmerLevel">
                         <unique_identifier name="Ambiente (1 - 10)" address_component="1" format="%.1d"/>
                         <unique_identifier name="Ponto de Luz (1 - 15)" address_component="2" format="%.1d"/>
-                        <unique_identifier name="Interface Use #4#0x" address_component="3" format="%.1d"/>
+                        <unique_identifier name="Interface" address_component="3" format="%.1d"/>
                     </valueSource>
                 </slider_representation>
                 
@@ -6492,7 +6490,7 @@
                     <toggleOnUsingState name="DimmerLevel">
                         <unique_identifier name="Ambiente (1 - 10)" address_component="1" format="%.1d"/>
                         <unique_identifier name="Ponto de Luz (1 - 15)" address_component="2" format="%.1d"/>
-                        <unique_identifier name="Interface Use #4#0x" address_component="3" format="%.1d"/>
+                        <unique_identifier name="Interface" address_component="3" format="%.1d"/>
                     </toggleOnUsingState>
                 </toggle_button_representation>
             </entity>
@@ -6518,7 +6516,7 @@
             <action name="ShadeUp">
                 <action_argument name="Address1" note="Ambiente (1 - 10)"/>
                 <action_argument name="Address2" note="Ponto de Luz (1 - 15)"/>
-                <action_argument name="Address3" note="Interface Use #4#0x"/>
+                <action_argument name="Address3" note="Interface"/>
                 <action_argument name="Address4" note="not used"/>
                 <action_argument name="Address5" note="not used"/>
                 <action_argument name="Address6" note="not used"/>
@@ -6544,7 +6542,6 @@
                         <parameter_list>
                             <parameter parameter_data_type="character" action_argument="Address1" parameter_total_width="2"></parameter>
                             <parameter parameter_data_type="character" action_argument="Address2" parameter_total_width="2"></parameter>
-                            <parameter parameter_data_type="character" action_argument="Address3" parameter_total_width="7"></parameter>
                             <parameter parameter_data_type="character" parameter_total_width="2">##</parameter>
                         </parameter_list>
                         <response_codes>
@@ -6558,7 +6555,7 @@
             <action name="ShadeDown">
                 <action_argument name="Address1" note="Ambiente (1 - 10)"/>
                 <action_argument name="Address2" note="Ponto de Luz (1 - 15)"/>
-                <action_argument name="Address3" note="Interface Use #4#0x"/>
+                <action_argument name="Address3" note="Interface"/>
                 <action_argument name="Address4" note="not used"/>
                 <action_argument name="Address5" note="not used"/>
                 <action_argument name="Address6" note="not used"/>
@@ -6584,7 +6581,6 @@
                         <parameter_list>
                             <parameter parameter_data_type="character" action_argument="Address1" parameter_total_width="2"></parameter>
                             <parameter parameter_data_type="character" action_argument="Address2" parameter_total_width="2"></parameter>
-                            <parameter parameter_data_type="character" action_argument="Address3" parameter_total_width="7"></parameter>
                             <parameter parameter_data_type="character" parameter_total_width="2">##</parameter>
                         </parameter_list>
                         <response_codes>
@@ -6598,7 +6594,7 @@
             <action name="ShadeStop">
                 <action_argument name="Address1" note="Ambiente (1 - 10)"/>
                 <action_argument name="Address2" note="Ponto de Luz (1 - 15)"/>
-                <action_argument name="Address3" note="Interface Use #4#0x"/>
+                <action_argument name="Address3" note="Interface"/>
                 <action_argument name="Address4" note="not used"/>
                 <action_argument name="Address5" note="not used"/>
                 <action_argument name="Address6" note="not used"/>
@@ -6624,7 +6620,6 @@
                         <parameter_list>
                             <parameter parameter_data_type="character" action_argument="Address1" parameter_total_width="2"></parameter>
                             <parameter parameter_data_type="character" action_argument="Address2" parameter_total_width="2"></parameter>
-                            <parameter parameter_data_type="character" action_argument="Address3" parameter_total_width="7"></parameter>
                             <parameter parameter_data_type="character" parameter_total_width="2">##</parameter>
                         </parameter_list>
                         <response_codes>
@@ -6635,6 +6630,39 @@
                     </command>
                 </command_interface>
             </action>
+            
+            
+            <!--SHADE SET LEVEL In Implementation-->
+            <action name="ShadeSet">
+                <action_argument name="ShadeLevel" note="Percentage to not be shaded. 0 means all the way down, 100 means all the way up"/>
+                <action_argument name="Address1" note="Relay Blind VID (1-999999)"/>
+                <action_argument name="Address2" note="not used"/>
+                <action_argument name="Address3" note="not used"/>
+                <action_argument name="Address4" note="not used"/>
+                <action_argument name="Address5" note="not used"/>
+                <action_argument name="Address6" note="not used"/>
+                <command_interface interface="rs232">
+                    <command response_required="no">
+                        <command_string type="character">BLIND </command_string>
+                        <parameter_list>
+                            <parameter parameter_data_type="character" action_argument="Address1"/>
+                            <parameter parameter_data_type="character"> POS </parameter>
+                            <parameter parameter_data_type="character" action_argument="ShadeLevel"/>
+                        </parameter_list>
+                    </command>
+                </command_interface>
+                <command_interface interface="ip">
+                    <command response_required="no">
+                        <command_string type="character">BLIND </command_string>
+                        <parameter_list>
+                            <parameter parameter_data_type="character" action_argument="Address1"/>
+                            <parameter parameter_data_type="character"> POS </parameter>
+                            <parameter parameter_data_type="character" action_argument="ShadeLevel"/>
+                        </parameter_list>
+                    </command>
+                </command_interface>
+            </action>
+
             
             <entity name="ShadeUp" address_components="3">
                 <push_button_representation>
@@ -6653,6 +6681,79 @@
                     <release_action name="ShadeStop"></release_action>
                     <osd_press_action name="ShadeStop"></osd_press_action>
                 </push_button_representation>
+            </entity>
+            
+            <entity name="Shade Slider" address_components="1">
+                <slider_representation>
+                    <press_action name="ShadeSet"/>
+                    <valueSource name="ShadeLevel">
+                        <unique_identifier name="Address1" address_component="1"/>
+                    </valueSource>
+                </slider_representation>
+                <group_representation>
+                    <push_button_representation >
+                        <release_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="0"/>
+                        </release_action>
+                        <osd_press_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="0"/>
+                        </osd_press_action>
+                    </push_button_representation>
+                    <push_button_representation >
+                        <release_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="20"/>
+                        </release_action>
+                        <osd_press_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="20"/>
+                        </osd_press_action>
+                    </push_button_representation>
+                    <push_button_representation>
+                        <release_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="40"/>
+                        </release_action>
+                        <osd_press_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="40"/>
+                        </osd_press_action>
+                    </push_button_representation>
+                    <push_button_representation>
+                        <release_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="60"/>
+                        </release_action>
+                        <osd_press_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="60"/>
+                        </osd_press_action>
+                    </push_button_representation>
+                    <push_button_representation >
+                        <release_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="80"/>
+                        </release_action>
+                        <osd_press_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="80"/>
+                        </osd_press_action>
+                    </push_button_representation>
+                    <push_button_representation>
+                        <release_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="100"/>
+                        </release_action>
+                        <osd_press_action name="ShadeSet">
+                            <argument name="ShadeLevel" value="100"/>
+                        </osd_press_action>
+                    </push_button_representation>
+                </group_representation>
+                <toggle_button_representation>
+                    <press_action name="ShadeSet">
+                        <argument name="ShadeLevel" value="100"/>
+                    </press_action>
+                    <toggle_action name="ShadeSet">
+                        <argument name="ShadeLevel" value="0"/>
+                    </toggle_action>
+                    <osd_press_action name="ShadeSet">
+                        <argument name="ShadeLevel" value="100"/>
+                    </osd_press_action>
+                    <osd_hold_action name="ShadeSet">
+                        <argument name="ShadeLevel" value="0"/>
+                    </osd_hold_action>
+                </toggle_button_representation>
             </entity>
             
         </resource_component_actions>
