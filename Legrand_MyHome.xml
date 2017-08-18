@@ -2,7 +2,7 @@
 <component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" 
     manufacturer="Legrand" 
-    model="MyHome1" 
+    model="MyHome" 
     device_class="Lighting_controller" 
     minimum_component_engine_version="0" 
     rpm_xml_version="$Revision: 1.29"
